@@ -39,7 +39,7 @@ const App = () => {
 
   const TotalHarga = () => {
     let total = 0;
-    keranjang.map((item) => {
+    keranjang.forEach((item) => {
       total += item.harga;
     });
     return <b>{intToRupiah(total)}</b>;
@@ -47,7 +47,7 @@ const App = () => {
 
   const hitungTotalHarga = () => {
     let total = 0;
-    keranjang.map((item) => {
+    keranjang.forEach((item) => {
       total += item.harga;
     });
     return total;
