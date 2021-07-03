@@ -1,5 +1,6 @@
 import React from "react";
 import "./App.css";
+import { v4 as uuidv4 } from "uuid";
 
 const App = () => {
   // React hooks
@@ -9,10 +10,26 @@ const App = () => {
     nama: "",
     harga: "",
   });
+  const [totalHarga, setTotalHarga] = React.useState();
+  const [uang, setUang] = React.useState();
+  const [selesai, setSelesai] = React.useState();
+
+  const selesaiBerbelanja = (harga, duitnya) => {
+    if (duitnya < harga) {
+      return alert("uangnya kurang bos");
+    } else {
+      setSelesai({
+        totalHarga: harga,
+        uang: duitnya,
+      });
+    }
+  };
 
   const tambahBarang = () => {
     let tmp = barang;
-    tmp.push(input);
+    let brg = input;
+    brg["id"] = uuidv4();
+    tmp.push(brg);
     setBarang([...tmp]);
     setInput({
       nama: "",
@@ -28,8 +45,17 @@ const App = () => {
     return <b>{intToRupiah(total)}</b>;
   };
 
+  const hitungTotalHarga = () => {
+    let total = 0;
+    keranjang.map((item) => {
+      total += item.harga;
+    });
+    return total;
+  };
+
   const tambahKeranjang = (item) => {
     let tmp = keranjang;
+
     tmp.push(item);
     setKeranjang([...tmp]);
   };
@@ -40,6 +66,19 @@ const App = () => {
 
   const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
+  const reset = () => {
+    setKeranjang([]);
+    setSelesai();
+    setTotalHarga();
+    setUang();
+  };
+
+  const deleteBarang = (id) => {
+    let tempBarang = barang;
+    const yangDiDelete = tempBarang.filter((item) => item.id !== id);
+    setBarang(yangDiDelete);
   };
 
   return (
@@ -95,12 +134,20 @@ const App = () => {
                   {capitalizeFirstLetter(item.nama)}, harga:{" "}
                   {intToRupiah(item.harga)}
                 </p>
-                <button
-                  onClick={() => tambahKeranjang(item)}
-                  className="bg-white text-blue-500 px-2 rounded align-middle justify-center"
-                >
-                  +
-                </button>
+                <div>
+                  <button
+                    onClick={() => tambahKeranjang(item)}
+                    className="bg-white text-blue-500 px-2 rounded align-middle justify-center mr-2"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() => deleteBarang(item.id)}
+                    className="bg-white text-red-500 px-2 rounded align-middle justify-center"
+                  >
+                    x
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -128,6 +175,58 @@ const App = () => {
           <p>Total Harga:</p>
           <TotalHarga />
         </div>
+        {uang && (
+          <div className="flex flex-row justify-between pr-4">
+            <p>Uang yang diberikan:</p>
+            <b>{intToRupiah(uang)}</b>
+          </div>
+        )}
+        {selesai && (
+          <div className="flex flex-row justify-between pr-4">
+            <p>Kembalian:</p>
+            <b className="text-red-500">
+              {intToRupiah(selesai.uang - selesai.totalHarga)}
+            </b>
+          </div>
+        )}
+
+        {keranjang.length !== 0 && !totalHarga && (
+          <button
+            className="px-4 py-1 mt-2 rounded bg-red-500 font-bold text-white "
+            onClick={() => setTotalHarga(hitungTotalHarga())}
+          >
+            Bayar
+          </button>
+        )}
+
+        {totalHarga && !selesai && (
+          <>
+            <p className="text-md font-bold mb-2 mt-2">Uang yang diberikan:</p>
+            <input
+              className="border-2 rounded"
+              value={uang}
+              onChange={(item) => {
+                setUang(item.target.value);
+              }}
+              type="number"
+            />
+            <button
+              className="px-4 py-1 mt-2 rounded bg-red-500 font-bold text-white "
+              onClick={() => selesaiBerbelanja(totalHarga, uang)}
+            >
+              Selesai
+            </button>
+          </>
+        )}
+
+        {selesai && (
+          <button
+            className="px-4 py-1 mt-2 rounded bg-red-500 font-bold text-white "
+            onClick={() => reset()}
+          >
+            Reset
+          </button>
+        )}
       </div>
     </div>
   );
